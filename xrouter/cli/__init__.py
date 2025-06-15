@@ -25,6 +25,10 @@ app.add_typer(app_setup, name="setup")
 
 @app.command("shell")
 def start_shell():
+    import IPython
+
     from xrouter.gwlib import gw
 
-    gw.logger.info("Starting shell...")
+    gw.setup(verbose=True)
+
+    IPython.start_ipython(argv=[], user_ns={"gw": gw})

@@ -33,3 +33,15 @@ sudo apt install pppoe
 # diagnostic tools
 sudo apt install net-tools bind9-dnsutils tcpdump mtr-tiny
 ```
+
+### 安装 xrouter
+
+```
+sudo mkdir /opt/xrouter
+sudo chown $(whoami):$(whoami) /opt/xrouter
+git clone https://github.com/stephenpcg/xrouter -C /opt/xrouter
+cd /opt/xrouter
+uv sync
+
+sudo ln -s /opt/xrouter/.venv/bin/gw /usr/local/bin/gw
+```
