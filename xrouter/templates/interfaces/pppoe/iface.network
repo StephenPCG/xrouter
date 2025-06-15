@@ -1,11 +1,6 @@
 [Match]
 Name={{ iface.name }}
 
-[BridgeVLAN]
-{% for vlan in iface.allowed_vlans %}
-VLAN={{ vlan }}
-{% endfor %}
-
 [Network]
 {% if iface.description %}
 Description={{ iface.description }}
@@ -13,12 +8,9 @@ Description={{ iface.description }}
 {% for address in iface.all_addresses %}
 Address={{ address }}
 {% endfor %}
-
-{% for svi in iface.vlan_interfaces %}
-VLAN={{ svi.name }}
-{% endfor %}
-
-ConfigureWithoutCarrier=yes
+{% if iface.dhcp %}
+DHCP=yes
+{% endif %}
 
 [Link]
 RequiredForOnline=no

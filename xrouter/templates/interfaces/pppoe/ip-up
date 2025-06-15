@@ -1,0 +1,7 @@
+#!/bin/bash
+
+IFACE_NAME="$1"
+
+if [[ "$IFACE_NAME" == "{{iface.name}}" ]]; then
+    networkctl reconfigure "{{iface.name}}"
+fi

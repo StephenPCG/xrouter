@@ -8,6 +8,9 @@ Description={{ svi.description }}
 {% for address in svi.all_addresses %}
 Address={{ address }}
 {% endfor %}
+{% if svi.dhcp %}
+DHCP=yes
+{% endif %}
 
 ConfigureWithoutCarrier=yes
 

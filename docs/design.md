@@ -22,13 +22,7 @@
 常用命令示意：
 
 ```sh
-# apply 表示将配置文件同步到系统中
-gw apply interfaces|route|...
-
-# reload 表示重启相应的服务
-gw reload interfaces|route|...
-
-# setup 为 apply + reload
+# setup 会先同步一次配置文件，再执行 reload
 gw setup interfaces|route|...
 
 # 不加任何参数，表示对所有 gw 命令能控制的东西都进行相应的操作

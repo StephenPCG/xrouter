@@ -15,7 +15,10 @@ deb https://mirrors.ustc.edu.cn/debian-security bookworm-security main non-free-
 
 ```
 # 以下非路由本身所需，主要是管理需要
-sudo apt install git vim byobu rsync curl
+sudo apt install git vim byobu rsync curl aptitude
+
+sudo apt install apt-file
+sudo apt-file update
 
 # 安装 uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -23,4 +26,10 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 # 安装 podman
 sudo apt install podman
 sudo apt install podman-compose -t bookworm-backports
+
+# interface packages
+sudo apt install pppoe
+
+# diagnostic tools
+sudo apt install net-tools bind9-dnsutils tcpdump mtr-tiny
 ```

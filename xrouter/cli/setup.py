@@ -1,3 +1,4 @@
+import sh
 import typer
 
 app = typer.Typer(
@@ -8,17 +9,32 @@ app = typer.Typer(
 
 @app.command("system")
 def setup_system():
-    from .apply import apply_system
-    from .reload import reload_system
+    from xrouter.gwlib import gw
 
-    apply_system()
-    reload_system()
+    gw.print("[setup system]")
+
+    gw.install_template_file(
+        "/etc/sysctl.d/99-xrouter.conf",
+        "99-xrouter.sysctl.conf",
+        {},
+    )
+
+    gw.run_command(sh.sysctl.bake("-p", "--system"))
 
 
 @app.command("interfaces")
 def setup_interfaces():
-    from .apply import apply_interfaces
-    from .reload import reload_interfaces
+    from xrouter.gwlib import gw
 
-    apply_interfaces()
-    reload_interfaces()
+    gw.print("[setup interfaces]")
+
+    for iface in gw.config.interfaces:
+        iface.apply()
+
+    for iface in gw.config.interfaces:
+        iface.pre_reload()
+
+    gw.run_command(sh.networkctl.bake("reload"))
+
+    for iface in gw.config.interfaces:
+        iface.post_reload()

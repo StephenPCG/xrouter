@@ -1,0 +1,17 @@
+hide-password
+noauth
+maxfail 0
+persist
+debug
+
+noipdefault
+nodefaultroute
+noreplacedefaultroute
+nodefaultroute6
+noproxyarp
++ipv6 ipv6cp-use-ipaddr
+
+plugin rp-pppoe.so {{iface.ethport}}
+ipparam {{iface.name}}
+user "{{iface.username}}"
+password "{{iface.password}}"
