@@ -12,3 +12,4 @@ wheels/
 # Instance files
 configs/
 logs/
+backups/

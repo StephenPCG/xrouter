@@ -1,16 +1,15 @@
 from dataclasses import dataclass, field
 from functools import cached_property
-
-from click import Path
+from pathlib import Path
 
 
 @dataclass
 class GlobalOption:
-    verbose: bool = False
-    system_root: str = field(default_factory=lambda: get_default_root())
+    verbose: bool = True
     project_root: Path = field(default_factory=lambda: get_project_root())
     config_root: Path = field(default_factory=lambda: get_config_root())
     log_root: Path = field(default_factory=lambda: get_log_root())
+    backup_root: Path = field(default_factory=lambda: get_backup_root())
 
     @cached_property
     def logger(self):
@@ -47,14 +46,9 @@ class GlobalOption:
 
         return logger
 
-
-def get_default_root():
-    """
-    The system root.
-
-    In case we later deploy xrouter inside a container, we can mount system root to container's `/host` dir.
-    """
-    return "/"
+    @cached_property
+    def file_backup_path(self):
+        return self.backup_root / "files"
 
 
 def get_project_root():
@@ -93,6 +87,13 @@ def get_log_root():
     Now this is inside the xrouter project, so the logs/ path should be ignored in .gitignore.
     """
     return Path("/opt/xrouter/logs")
+
+
+def get_backup_root():
+    """
+    All backups are stored in /opt/xrouter/backups.
+    """
+    return Path("/opt/xrouter/backups")
 
 
 global_options = GlobalOption()

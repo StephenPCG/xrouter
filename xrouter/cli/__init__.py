@@ -12,9 +12,8 @@ app = typer.Typer(no_args_is_help=True)
 @app.callback()
 def global_options(
     verbose: Annotated[bool | None, typer.Option("--verbose/--silent")] = None,
-    system_root: Annotated[str | None, typer.Option("--system-root")] = None,
 ):
-    from xrouter.utils import run_as_root
+    from xrouter.utils.run_as_root import run_as_root
 
     from .base import global_options
 
@@ -22,8 +21,6 @@ def global_options(
 
     if verbose is not None:
         global_options.verbose = verbose
-    if system_root is not None:
-        global_options.system_root = system_root
 
 
 app.add_typer(app_apply, name="apply")
