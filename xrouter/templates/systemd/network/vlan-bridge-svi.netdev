@@ -1,0 +1,6 @@
+[NetDev]
+Name={{ svi.name }}
+Kind=vlan
+
+[VLAN]
+Id={{ svi.vlan }}

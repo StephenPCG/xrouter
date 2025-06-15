@@ -1,6 +1,5 @@
 import sh
 import typer
-from rich import print
 
 app = typer.Typer(
     no_args_is_help=True,
@@ -10,4 +9,21 @@ app = typer.Typer(
 
 @app.command("system")
 def reload_system():
-    print(sh.sysctl("-p", "--system"))
+    from .base import global_options as go
+
+    logger = go.logger
+
+    logger.info("[reload system]")
+    logger.info(" > sysctl -p --system")
+    logger.info(sh.sysctl("-p", "--system"))
+
+
+@app.command("interfaces")
+def reload_interfaces():
+    from .base import global_options as go
+
+    logger = go.logger
+
+    logger.info("[reload interfaces]")
+    logger.info(" > networkctl reload")
+    logger.info(sh.networkctl("reload"))

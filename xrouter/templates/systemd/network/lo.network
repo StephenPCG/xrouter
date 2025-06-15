@@ -1,0 +1,10 @@
+[Match]
+Name=lo
+
+[Network]
+{% if iface.description %}
+Description={{ iface.description }}
+{% endif %}
+{% for address in iface.all_addresses %}
+Address={{ address }}
+{% endfor %}

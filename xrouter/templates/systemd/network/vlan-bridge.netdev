@@ -1,0 +1,7 @@
+[NetDev]
+Name={{ iface.name }}
+Kind=bridge
+
+[Bridge]
+VLANFiltering=yes
+DefaultPVID=none

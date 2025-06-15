@@ -1,29 +1,26 @@
 # import pydoc
 from pathlib import Path
+from typing import Callable
 
-from rich import print
+from rich import print as rich_print
 
 
 def install_text_file(
     path: str | Path,
     content: str,
     mode: str = "644",
-    show_diff: bool = False,
+    print: Callable[[str], None] = rich_print,
     backup_path: Path | None = None,
 ):
     if isinstance(path, str):
         path = Path(path)
-
-    print(f"Installing {path} with mode {mode}")
 
     has_diff, diff = check_file_diff(path, content, mode)
     if not has_diff:
         print(f"{path} is up to date")
         return
 
-    if show_diff:
-        # pydoc.pager(diff)
-        print(diff)
+    print(diff)
 
     if backup_path:
         backup_file(path, backup_path)
@@ -41,14 +38,14 @@ def install_template_file(
     template_name: str,
     context: dict,
     mode: str = "644",
-    show_diff: bool = False,
+    print: Callable[[str], None] = rich_print,
     backup_path: Path | None = None,
 ):
     from xrouter.utils.jinja import render
 
     content = render(template_name, context)
 
-    install_text_file(path, content, mode, show_diff, backup_path)
+    install_text_file(path, content, mode, print, backup_path)
 
 
 def install_binary_file(
@@ -56,13 +53,11 @@ def install_binary_file(
     # source file path or source file content
     content: Path | bytes,
     mode: str = "644",
-    show_diff: bool = False,
+    print: Callable[[str], None] = rich_print,
     backup_path: Path | None = None,
 ):
     if isinstance(path, str):
         path = Path(path)
-
-    print(f"Installing {path} with mode {mode}")
 
     if isinstance(content, Path):
         content = content.read_bytes()
@@ -72,9 +67,7 @@ def install_binary_file(
         print(f"{path} is up to date")
         return
 
-    if show_diff:
-        # pydoc.pager(diff)
-        print(diff)
+    print(diff)
 
     if backup_path:
         backup_file(path, backup_path)

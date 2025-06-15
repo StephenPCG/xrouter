@@ -15,6 +15,8 @@ class GlobalOption:
     def logger(self):
         import logging
 
+        from rich.logging import RichHandler
+
         if not self.log_root.exists():
             self.log_root.mkdir(parents=True, exist_ok=True)
 
@@ -25,17 +27,12 @@ class GlobalOption:
         # File handler
         file_handler = logging.FileHandler(self.log_root / "cli.log")
         file_handler.setLevel(logging.DEBUG if self.verbose else logging.INFO)
+        formatter = logging.Formatter("[%(levelname)s][%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+        file_handler.setFormatter(formatter)
 
         # Console handler
-        console_handler = logging.StreamHandler()
+        console_handler = RichHandler(log_time_format="[%Y-%m-%d %H:%M:%S] ")
         console_handler.setLevel(logging.DEBUG if self.verbose else logging.INFO)
-
-        # Create formatter
-        formatter = logging.Formatter("[%(levelname)s][%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
-
-        # Add formatter to handlers
-        file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
 
         # Add handlers to logger
         logger.addHandler(file_handler)
@@ -49,6 +46,13 @@ class GlobalOption:
     @cached_property
     def file_backup_path(self):
         return self.backup_root / "files"
+
+    @cached_property
+    def xrouter_config_file(self):
+        return self.config_root / "xrouter.yml"
+
+    def print(self, message: str):
+        self.logger.info(message)
 
 
 def get_project_root():

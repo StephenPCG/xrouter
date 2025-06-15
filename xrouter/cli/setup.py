@@ -13,3 +13,12 @@ def setup_system():
 
     apply_system()
     reload_system()
+
+
+@app.command("interfaces")
+def setup_interfaces():
+    from .apply import apply_interfaces
+    from .reload import reload_interfaces
+
+    apply_interfaces()
+    reload_interfaces()

@@ -1,0 +1,15 @@
+[Match]
+Name={{ svi.name }}
+
+[Network]
+{% if svi.description %}
+Description={{ svi.description }}
+{% endif %}
+{% for address in svi.all_addresses %}
+Address={{ address }}
+{% endfor %}
+
+ConfigureWithoutCarrier=yes
+
+[Link]
+RequiredForOnline=no

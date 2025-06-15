@@ -30,4 +30,8 @@ app.add_typer(app_setup, name="setup")
 
 @app.command("shell")
 def start_shell():
-    print("Starting shell...")
+    from .base import global_options as go
+
+    logger = go.logger
+
+    logger.info("Starting shell...")

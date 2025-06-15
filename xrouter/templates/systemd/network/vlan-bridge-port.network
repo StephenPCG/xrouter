@@ -1,0 +1,17 @@
+[Match]
+Name={{ port.name }}
+
+[Network]
+{% if port.description %}
+Description={{ port.description }}
+{% endif %}
+Bridge={{ iface.name }}
+
+[BridgeVLAN]
+{% for vlan in port.allowed_vlans %}
+VLAN={{ vlan }}
+{% endfor %}
+{% if port.pvid %}
+PVID={{ port.pvid }}
+EgressUntagged={{ port.pvid }}
+{% endif %}
