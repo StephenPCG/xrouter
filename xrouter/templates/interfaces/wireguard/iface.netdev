@@ -1,0 +1,23 @@
+[NetDev]
+Name={{ iface.name }}
+Kind=wireguard
+
+[WireGuard]
+PrivateKey={{ iface.private_key }}
+ListenPort={{ iface.listen_port }}
+
+{% for peer in iface.peers %}
+[WireGuardPeer]
+# Name: {{ peer.name }}
+PublicKey={{ peer.public_key }}
+{% if peer.endpoint %}
+Endpoint={{ peer.endpoint }}
+{% endif %}
+{% if peer.persistent_keepalive %}
+PersistentKeepalive={{ peer.persistent_keepalive }}
+{% endif %}
+{% if peer.allowed_ips %}
+AllowedIPs={{ peer.allowed_ips_str }}
+{% endif %}
+
+{% endfor %}

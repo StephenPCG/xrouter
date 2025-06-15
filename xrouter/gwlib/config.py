@@ -1,7 +1,7 @@
 from typing import Annotated, Literal
 
 import sh
-from pydantic import BaseModel, Field, IPvAnyInterface
+from pydantic import BaseModel, Field, IPvAnyInterface, IPvAnyNetwork, computed_field
 
 
 class InterfaceCommon(BaseModel):
@@ -139,8 +139,41 @@ class PPPoE(InterfaceCommon):
         gw.run_command(sh.systemctl.bake("start", "--no-block", f"pppd@{self.name}.service"))
 
 
+class WireguardPeer(BaseModel):
+    name: str
+    allowed_ips: list[IPvAnyNetwork] = []
+    public_key: str
+    endpoint: str | None = None
+    persistent_keepalive: int | None = None
+
+    @computed_field
+    def allowed_ips_str(self) -> str:
+        return ",".join([ip.with_prefixlen for ip in self.allowed_ips])
+
+
+class Wireguard(InterfaceCommon):
+    type: Literal["wireguard"] = "wireguard"
+    private_key: str
+    listen_port: str
+    peers: list[WireguardPeer] = []
+
+    def apply(self):
+        from .gwlib import gw
+
+        gw.install_template_file(
+            f"/etc/systemd/network/02-xrouter-{self.name}.netdev",
+            "interfaces/wireguard/iface.netdev",
+            dict(iface=self),
+        )
+        gw.install_template_file(
+            f"/etc/systemd/network/02-xrouter-{self.name}.network",
+            "interfaces/wireguard/iface.network",
+            dict(iface=self),
+        )
+
+
 Interface = Annotated[
-    Lo | VlanBridge | PPPoE,
+    Lo | VlanBridge | PPPoE | Wireguard,
     Field(discriminator="type"),
 ]
 

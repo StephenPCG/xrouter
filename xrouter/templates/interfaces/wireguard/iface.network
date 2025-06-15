@@ -1,0 +1,15 @@
+[Match]
+Name={{ iface.name }}
+
+[Network]
+{% if iface.description %}
+Description={{ iface.description }}
+{% endif %}
+{% for address in iface.all_addresses %}
+Address={{ address }}
+{% endfor %}
+
+ConfigureWithoutCarrier=yes
+
+[Link]
+RequiredForOnline=no

@@ -28,7 +28,7 @@ sudo apt install podman
 sudo apt install podman-compose -t bookworm-backports
 
 # interface packages
-sudo apt install pppoe
+sudo apt install pppoe wireguard
 
 # diagnostic tools
 sudo apt install net-tools bind9-dnsutils tcpdump mtr-tiny
