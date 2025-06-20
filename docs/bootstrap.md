@@ -44,4 +44,6 @@ cd /opt/xrouter
 uv sync
 
 sudo ln -s /opt/xrouter/.venv/bin/gw /usr/local/bin/gw
+
+echo 'export PATH=/opt/xrouter/bin:$PATH' >> ~/.bashrc
 ```

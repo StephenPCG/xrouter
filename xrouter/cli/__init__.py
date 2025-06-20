@@ -2,6 +2,7 @@ from typing import Annotated
 
 import typer
 
+from .reload import app as app_reload
 from .setup import app as app_setup
 
 app = typer.Typer(no_args_is_help=True)
@@ -21,6 +22,7 @@ def global_options(
 
 
 app.add_typer(app_setup, name="setup")
+app.add_typer(app_reload, name="reload")
 
 
 @app.command("shell")

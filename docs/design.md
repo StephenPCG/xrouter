@@ -19,12 +19,39 @@
 * 将配置文件应用到系统中（可能是copy/symlink到系统中，可能是通过模板生成新的文件更新到系统中）
 * 让系统应用新的配置文件（如重启服务、执行某个命令等）
 
-常用命令示意：
+因此，我们的命令如下：
+
+* `gw setup XXX`，生成配置文件
+* `gw reload XXX`，重启相应的服务
+
+例如：
 
 ```sh
-# setup 会先同步一次配置文件，再执行 reload
-gw setup interfaces|route|...
+# 对所有接口生成相应的 netdev、network 文件，部分需要独立进程的还有 service 文件
+gw setup ifaces
 
-# 不加任何参数，表示对所有 gw 命令能控制的东西都进行相应的操作
-gw setup
+# 重启接口，大多数 networkctl reload，少部分还需要 systemctl restart xxx.service
+# reload 命令不一定要通过 gw 运行，也可以手动执行
+gw reload ifaces [iface]
+
+# 生成 route 脚本，存放到 /xxx/setup-route.sh 中
+gw setup route
+# 重新加载 route（也可以手动运行 setup-route.sh）
+gw reload route
+
+# 生成 /etc/nftables.conf （其中包含端口映射、podman 的规则等）
+gw setup firewall
+
+# 重启 nft 规则，也可执行 systemctl restart nftables
+gw reload firewall
+
+# 生成 dnsmasq 配置文件（当 china-names 有更新时，也可执行以更新配置）
+gw setup dnsmasq
+# 重启 dnsmasq
+gw reload dnsmasq
+
+# 生成 podman 容器的配置文件
+gw setup containers
+# 重启容器
+gw reload containers [container]
 ```

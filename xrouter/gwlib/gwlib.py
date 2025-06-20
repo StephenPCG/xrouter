@@ -10,6 +10,8 @@ class GwLib:
     config_root: Path = field(default_factory=lambda: Path("/opt/xrouter/configs"))
     log_root: Path = field(default_factory=lambda: Path("/opt/xrouter/logs"))
     backup_root: Path = field(default_factory=lambda: Path("/opt/xrouter/backups"))
+    zones_root: Path = field(default_factory=lambda: Path("/opt/xrouter/zones"))
+    bin_root: Path = field(default_factory=lambda: Path("/opt/xrouter/bin"))
 
     @cached_property
     def run_id(self):
@@ -91,7 +93,7 @@ class GwLib:
         if not isinstance(command, Command):
             raise Exception("Invalid command, must be constructed by sh.COMMAND.bake()")
 
-        self.logger.info(command)
+        self.logger.info(f"> {command}")
         self.logger.info(command())
 
     def render_template(self, template_name: str, context: dict):
@@ -104,6 +106,7 @@ class GwLib:
         file: str | Path,
         content: str,
         mode: str = "644",
+        show_diff: bool = True,
     ):
         if isinstance(file, str):
             file = Path(file)
@@ -113,7 +116,8 @@ class GwLib:
             self.print(f"{file} is up to date")
             return
 
-        self.print(diff)
+        if show_diff:
+            self.print(diff)
 
         self.backup_file(file)
 
@@ -126,15 +130,17 @@ class GwLib:
         template_name: str,
         context: dict,
         mode: str = "644",
+        show_diff: bool = True,
     ):
         content = self.render_template(template_name, context)
-        return self.install_text_file(file, content, mode)
+        return self.install_text_file(file, content, mode, show_diff)
 
     def install_binary_file(
         self,
         file: str | Path,
         content: Path | bytes,
         mode: str = "644",
+        show_diff: bool = True,
     ):
         if isinstance(file, str):
             file = Path(file)
@@ -147,7 +153,8 @@ class GwLib:
             self.print(f"{file} is up to date")
             return
 
-        self.print(diff)
+        if show_diff:
+            self.print(diff)
 
         self.backup_file(file)
 

@@ -22,8 +22,8 @@ def setup_system():
     gw.run_command(sh.sysctl.bake("-p", "--system"))
 
 
-@app.command("interfaces")
-def setup_interfaces():
+@app.command("ifaces")
+def setup_ifaces():
     from xrouter.gwlib import gw
 
     gw.print("[setup interfaces]")
@@ -38,3 +38,25 @@ def setup_interfaces():
 
     for iface in gw.config.interfaces:
         iface.post_reload()
+
+
+@app.command("route")
+def setup_route():
+    from sh import Command
+
+    from xrouter.gwlib import gw
+
+    gw.print("[setup route]")
+
+    gw.config.route.apply(gw.bin_root / "setup-route.sh")
+
+    cmd = Command(gw.bin_root / "setup-route.sh")
+    gw.run_command(cmd)
+
+
+@app.command("firewall")
+def setup_firewall():
+    """
+    生成 nft 文件，输出到 /etc/nftables.conf
+    """
+    pass
