@@ -1,0 +1,161 @@
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+define PRIVATE_NETWORKS = { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 100.64.0.0/10 }
+
+# general firewall rules
+table inet firewall {
+    chain input {
+        type filter hook input priority 0; policy drop;
+
+        # always allow loopback
+        iif lo accept
+
+        # drop invalid connections and accept established connections
+        ct state invalid drop
+        ct state established,related accept
+
+        jump custom_firewall_input
+
+        # allow icmp ping (no harm)
+        icmp type echo-request accept
+        # allow all icmpv6 packets (ensure ipv6 pd works)
+        meta l4proto ipv6-icmp accept
+
+        # drop all traffic from wan
+        iifgroup 0x1 drop
+
+        # allow all traffic from lan
+        iifgroup 0x2 accept
+
+        # allow dns & dhcp, disallow all other traffic from guest
+        iifgroup 0x3 udp dport {53, 67} accept
+        iifgroup 0x3 drop
+    }
+
+    chain output {
+        type filter hook output priority 0; policy accept;
+
+        # equivalent to '-j TCPMSS --clamp-mss-to-pmtu'.
+        tcp flags syn tcp option maxseg size set rt mtu
+
+        jump custom_firewall_output
+    }
+
+    chain forward {
+        type filter hook forward priority 0; policy drop;
+
+        # drop invalid connections and accept established connections
+        ct state invalid drop
+        ct state established,related accept
+
+        # equivalent to '-j TCPMSS --clamp-mss-to-pmtu'.
+        tcp flags syn tcp option maxseg size set rt mtu
+
+        jump custom_firewall_forward
+
+        # disallow forward from wan to anywhere
+        iifgroup 0x1 drop
+
+        # allow forward from lan to anyware
+        iifgroup 0x2 accept
+
+        # allow forward guest to wan, but not private addr (for example, private tunnels)
+        iifgroup 0x3 oifgroup 0x1 ip daddr != $PRIVATE_NETWORKS accept
+        iifgroup 0x3 drop
+    }
+
+    chain custom_firewall_input {}
+    chain custom_firewall_output {}
+    chain custom_firewall_forward {}
+}
+
+# add fwmarks to packets for routing, like iptables mangle table
+table inet route {
+    chain output {
+        type route hook output priority -200;
+
+        jump custom_route_output
+    }
+
+    chain prerouting {
+        type filter hook prerouting priority -200;
+
+        jump custom_route_prerouting
+    }
+
+    chain postrouting {
+        type filter hook postrouting priority -200;
+
+        jump custom_route_postrouting
+    }
+
+    chain custom_route_output {}
+    chain custom_route_prerouting {}
+    chain custom_route_postrouting {}
+}
+
+# snat, dnat rules
+table inet nat {
+    chain output {
+        type nat hook output priority -100;
+
+        jump custom_nat_output
+    }
+
+    chain prerouting {
+        type nat hook prerouting priority dstnat;
+
+        jump custom_nat_prerouting
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat;
+
+        jump custom_nat_postrouting
+
+        # masquerade when going out to wan
+        oifgroup 0x1 masquerade
+    }
+
+    chain forward {
+         type filter hook forward priority filter - 1;
+         jump custom_nat_forward
+    }
+
+    chain custom_nat_output {}
+    chain custom_nat_prerouting {}
+    chain custom_nat_postrouting {}
+    chain custom_nat_forward {}
+}
+
+# portmap rules
+table inet portmap {
+    chain output {
+        type nat hook output priority -102;
+        jump custom_portmap_output
+    }
+
+    chain prerouting {
+        type nat hook prerouting priority dstnat - 2;
+        jump custom_portmap_prerouting
+    }
+
+    chain postrouting {
+        type nat hook postrouting priority srcnat - 2;
+        jump custom_portmap_postrouting
+    }
+
+    chain forward {
+        type filter hook forward priority filter - 2;
+        jump custom_portmap_forward
+    }
+
+    chain custom_portmap_output {}
+    chain custom_portmap_prerouting {}
+    chain custom_portmap_postrouting {}
+    chain custom_portmap_forward {}
+}
+
+include "/opt/xrouter/configs/*.nft"

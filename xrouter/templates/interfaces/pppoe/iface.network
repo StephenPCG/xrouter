@@ -14,3 +14,6 @@ DHCP=yes
 
 [Link]
 RequiredForOnline=no
+{% if iface.devgroup %}
+Group={{ iface.devgroup }}
+{% endif %}

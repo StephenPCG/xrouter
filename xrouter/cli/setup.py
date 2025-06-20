@@ -59,4 +59,13 @@ def setup_firewall():
     """
     生成 nft 文件，输出到 /etc/nftables.conf
     """
-    pass
+    from sh import Command
+
+    from xrouter.gwlib import gw
+
+    gw.print("[setup firewall]")
+
+    gw.config.firewall.apply()
+
+    cmd = Command(gw.bin_root / "setup-firewall.nft")
+    gw.run_command(cmd)

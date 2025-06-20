@@ -80,6 +80,7 @@ class GwLib:
             autoescape=False,
             trim_blocks=True,
             lstrip_blocks=True,
+            keep_trailing_newline=True,
         )
 
         return env
@@ -218,22 +219,27 @@ def check_diff(path: Path, content: str | bytes, mode: str) -> tuple[bool, str]:
     current_mode = oct(path.stat().st_mode)[-3:] if path.exists() else None
 
     # Show mode changes if different
-    mode_diff = ""
+    has_diff = False
+    diff = ""
     if current_mode != mode and current_mode is not None:
-        mode_diff = f"mode change {current_mode} -> {mode}\n"
+        has_diff = True
+        diff = f"mode change {current_mode} -> {mode}\n"
 
     # Handle binary vs text content
     if isinstance(content, bytes):
         current_binary_content = path.read_bytes() if path.exists() else b""
         if current_binary_content == content:
-            return False, ""
-        diff = "Binary files differ\n"
+            return has_diff, diff
+
+        has_diff = True
+        diff += "Binary files differ\n"
     else:
         current_text_content = path.read_text() if path.exists() else ""
         if current_text_content == content:
-            return False, ""
+            return has_diff, diff
 
-        diff = "".join(
+        has_diff = True
+        diff += "".join(
             difflib.unified_diff(
                 current_text_content.splitlines(keepends=True),
                 content.splitlines(keepends=True),
@@ -242,7 +248,7 @@ def check_diff(path: Path, content: str | bytes, mode: str) -> tuple[bool, str]:
             )
         )
 
-    return True, mode_diff + diff
+    return has_diff, diff
 
 
 gw = GwLib()

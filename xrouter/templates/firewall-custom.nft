@@ -1,0 +1,43 @@
+table inet firewall {
+    chain custom_firewall_input {
+        ## examples
+
+        # allow ssh from anywhere
+        # tcp dport { ssh } accept
+
+        # allow openvpn client from wan
+        # iifgroup 0x1 udp dport { 1194 } accept
+    }
+
+    chain custom_firewall_output {}
+
+    chain custom_firewall_forward {}
+}
+
+table inet route {
+    chain custom_route_output {}
+
+    chain custom_route_prerouting {}
+
+    chain custom_route_postrouting {}
+}
+
+table inet nat {
+    chain custom_nat_output {}
+
+    chain custom_nat_prerouting {}
+
+    chain custom_nat_postrouting {}
+
+    chain custom_nat_forward {}
+}
+
+table inet portmap {
+    chain custom_portmap_output {}
+
+    chain custom_portmap_prerouting {}
+
+    chain custom_portmap_postrouting {}
+
+    chain custom_portmap_forward {}
+}
