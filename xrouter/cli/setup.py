@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import sh
 import typer
 
@@ -91,9 +93,26 @@ def setup_net():
     setup_route()
 
 
-@app.command("pods")
-def setup_pods():
-    pass
+@app.command("containers")
+def setup_pods(names: Annotated[list[str] | None, typer.Argument()] = None):
+    from xrouter.gwlib import gw
+
+    gw.print("[setup containers]")
+
+    if not names:
+        names = gw.config.containers.container_names
+
+    for name in names:
+        container = gw.config.containers.containers[name]
+
+        container.create_mount_sources()
+        gw.install_template_file(
+            f"/etc/systemd/system/container-{container.name}.service",
+            "container/podman-container.service",
+            dict(container=container),
+        )
+        gw.run_command(sh.systemctl.bake("enable", f"container-{name}.service"))
+        gw.run_command(sh.systemctl.bake("start", f"container-{name}.service"))
 
 
 @app.command("dnsmasq")
@@ -134,4 +153,4 @@ def setup_dnsmasq():
         {},
     )
 
-    # gw.run_command(sh.systemctl.bake("restart", "dnsmasq"))
+    gw.run_command(sh.systemctl.bake("restart", "dnsmasq"))

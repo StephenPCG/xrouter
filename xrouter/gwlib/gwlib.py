@@ -13,6 +13,7 @@ class GwLib:
     log_root: Path = field(default_factory=lambda: Path("/opt/xrouter/logs"))
     backup_root: Path = field(default_factory=lambda: Path("/opt/xrouter/backups"))
     bin_root: Path = field(default_factory=lambda: Path("/opt/xrouter/bin"))
+    container_data_root: Path = field(default_factory=lambda: Path("/opt/xrouter/containers"))
 
     @cached_property
     def run_id(self):

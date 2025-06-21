@@ -211,7 +211,9 @@ class PodmanBridge(InterfaceCommon):
         bridge_plugin = dict(
             type="bridge",
             bridge=self.name,
-            ipad=dict(
+            isGateway=True,
+            isDefaultGateway=True,
+            ipam=dict(
                 type="host-local",
                 ranges=self.get_ipam_ranges(),
             ),

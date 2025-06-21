@@ -22,6 +22,7 @@ class Route(BaseModel):
         ip_batch_lines.extend(
             [
                 "rule flush",
+                "rule add from all lookup main pref 1",
                 "rule add from all lookup main pref 32766",
                 "rule add from all lookup local pref 32767",
             ]

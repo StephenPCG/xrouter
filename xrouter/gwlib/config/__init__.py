@@ -2,6 +2,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field
 
+from .container import ContainerConfig
 from .dnsmasq import DnsmasqConfig
 from .firewall import Firewall
 from .interface import Interface
@@ -14,6 +15,7 @@ class XrouterConfig(BaseModel):
     route: Annotated[Route, Field(default_factory=Route)]
     firewall: Annotated[Firewall, Field(default_factory=Firewall)]
     dnsmasq: Annotated[DnsmasqConfig, Field(default_factory=DnsmasqConfig)]
+    containers: Annotated[ContainerConfig, Field(default_factory=ContainerConfig)]
 
     def model_post_init(self, _context):
         for iface in self.interfaces:

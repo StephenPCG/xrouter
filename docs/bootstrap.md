@@ -31,7 +31,7 @@ sudo apt install podman-compose -t bookworm-backports
 sudo apt install pppoe wireguard
 
 # diagnostic tools
-sudo apt install net-tools bind9-dnsutils tcpdump mtr-tiny
+sudo apt install net-tools bind9-dnsutils tcpdump mtr-tiny netcat-openbsd
 ```
 
 ### 安装 xrouter
