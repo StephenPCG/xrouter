@@ -2,6 +2,7 @@ from typing import Annotated
 
 import typer
 
+from .fetch import app as app_fetch
 from .reload import app as app_reload
 from .setup import app as app_setup
 
@@ -23,6 +24,7 @@ def global_options(
 
 app.add_typer(app_setup, name="setup")
 app.add_typer(app_reload, name="reload")
+app.add_typer(app_fetch, name="fetch")
 
 
 @app.command("shell")

@@ -15,7 +15,7 @@ deb https://mirrors.ustc.edu.cn/debian-security bookworm-security main non-free-
 
 ```
 # 以下非路由本身所需，主要是管理需要
-sudo apt install git vim byobu rsync curl aptitude
+sudo apt install git vim byobu rsync curl aptitude jq
 
 sudo apt install apt-file
 sudo apt-file update

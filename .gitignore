@@ -15,3 +15,4 @@ logs/
 backups/
 zones/
 bin/
+tmp/

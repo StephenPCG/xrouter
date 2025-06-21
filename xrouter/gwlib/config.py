@@ -345,6 +345,10 @@ class Route(BaseModel):
         except ValueError:
             pass
 
+        zone_file = gw.zones_root / f"manual-{target}.txt"
+        if zone_file.exists():
+            return ("zone", zone_file)
+
         zone_file = gw.zones_root / f"{target}.txt"
         if zone_file.exists():
             return ("zone", zone_file)
