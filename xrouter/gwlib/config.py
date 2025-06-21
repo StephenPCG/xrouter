@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Annotated, Literal, cast
 
 import sh
-from pydantic import BaseModel, Field, IPvAnyInterface, IPvAnyNetwork, computed_field
+from pydantic import BaseModel, Field, IPvAnyAddress, IPvAnyInterface, IPvAnyNetwork, computed_field
 
 
 class InterfaceCommon(BaseModel):
@@ -60,7 +60,7 @@ class Lo(InterfaceCommon):
         from .gwlib import gw
 
         gw.install_template_file(
-            "/etc/systemd/network/01-xrouter-lo.network",
+            "/etc/systemd/network/01-lo.network",
             "interfaces/lo.network",
             dict(iface=self),
         )
@@ -87,29 +87,29 @@ class VlanBridge(InterfaceCommon):
         from .gwlib import gw
 
         gw.install_template_file(
-            f"/etc/systemd/network/01-xrouter-{self.name}.netdev",
+            f"/etc/systemd/network/01-{self.name}.netdev",
             "interfaces/vlan-bridge/vlan-bridge.netdev",
             dict(iface=self),
         )
         gw.install_template_file(
-            f"/etc/systemd/network/01-xrouter-{self.name}.network",
+            f"/etc/systemd/network/01-{self.name}.network",
             "interfaces/vlan-bridge/vlan-bridge.network",
             dict(iface=self),
         )
         for port in self.ports:
             gw.install_template_file(
-                f"/etc/systemd/network/02-xrouter-{port.name}.network",
+                f"/etc/systemd/network/02-{port.name}.network",
                 "interfaces/vlan-bridge/vlan-bridge-port.network",
                 dict(iface=self, port=port),
             )
         for svi in self.vlan_interfaces:
             gw.install_template_file(
-                f"/etc/systemd/network/02-xrouter-{svi.name}.netdev",
+                f"/etc/systemd/network/02-{svi.name}.netdev",
                 "interfaces/vlan-bridge/vlan-bridge-svi.netdev",
                 dict(iface=self, svi=svi),
             )
             gw.install_template_file(
-                f"/etc/systemd/network/02-xrouter-{svi.name}.network",
+                f"/etc/systemd/network/02-{svi.name}.network",
                 "interfaces/vlan-bridge/vlan-bridge-svi.network",
                 dict(iface=self, svi=svi),
             )
@@ -179,19 +179,89 @@ class Wireguard(InterfaceCommon):
         from .gwlib import gw
 
         gw.install_template_file(
-            f"/etc/systemd/network/02-xrouter-{self.name}.netdev",
+            f"/etc/systemd/network/02-{self.name}.netdev",
             "interfaces/wireguard/iface.netdev",
             dict(iface=self),
         )
         gw.install_template_file(
-            f"/etc/systemd/network/02-xrouter-{self.name}.network",
+            f"/etc/systemd/network/02-{self.name}.network",
             "interfaces/wireguard/iface.network",
             dict(iface=self),
         )
 
 
+class PodmanBridgeIpamRange(BaseModel):
+    subnet: IPvAnyNetwork
+    # default to .1
+    gateway: IPvAnyAddress | None = None
+    # default to .2
+    rangeStart: IPvAnyAddress | None = None
+    # default to .254 for ipv4, .255 for ipv6
+    rangeEnd: IPvAnyAddress | None = None
+
+
+class PodmanBridge(InterfaceCommon):
+    type: Literal["podman-bridge"] = "podman-bridge"
+    ranges: list[PodmanBridgeIpamRange] = []
+
+    def get_ipam_ranges(self):
+        ranges = []
+
+        for range in self.ranges:
+            range_data = dict(subnet=range.subnet.with_prefixlen)
+            if range.gateway:
+                range_data["gateway"] = range.gateway
+            if range.rangeStart:
+                range_data["rangeStart"] = range.rangeStart
+            if range.rangeEnd:
+                range_data["rangeEnd"] = range.rangeEnd
+
+            ranges.append([range_data])
+
+        return ranges
+
+    def apply(self):
+        import json
+
+        from xrouter.gwlib import gw
+
+        bridge_plugin = dict(
+            type="bridge",
+            bridge=self.name,
+            ipad=dict(
+                type="host-local",
+                ranges=self.get_ipam_ranges(),
+            ),
+        )
+
+        conflist = dict(
+            cniVersion="0.4.0",
+            name=self.name,
+            plugins=[
+                bridge_plugin,
+            ],
+        )
+
+        content = json.dumps(conflist, indent=2, ensure_ascii=False)
+        gw.install_text_file(
+            f"/etc/cni/net.d/10-{self.name}.conflist",
+            content,
+        )
+
+        gw.install_template_file(
+            f"/etc/systemd/network/02-{self.name}.netdev",
+            "interfaces/podman-bridge/iface.netdev",
+            dict(iface=self),
+        )
+        gw.install_template_file(
+            f"/etc/systemd/network/02-{self.name}.network",
+            "interfaces/podman-bridge/iface.network",
+            dict(iface=self),
+        )
+
+
 Interface = Annotated[
-    Lo | VlanBridge | PPPoE | Wireguard,
+    Lo | VlanBridge | PPPoE | Wireguard | PodmanBridge,
     Field(discriminator="type"),
 ]
 

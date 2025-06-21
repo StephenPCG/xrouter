@@ -69,3 +69,20 @@ def setup_firewall():
 
     cmd = Command(gw.bin_root / "setup-firewall.nft")
     gw.run_command(cmd)
+
+
+@app.command("net")
+def setup_net():
+    setup_ifaces()
+    setup_firewall()
+    setup_route()
+
+
+@app.command("pods")
+def setup_pods():
+    pass
+
+
+@app.command("dnsmasq")
+def setup_dnsmasq():
+    pass

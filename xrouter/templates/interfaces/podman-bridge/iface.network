@@ -1,0 +1,21 @@
+[Match]
+Name={{ iface.name }}
+
+[Network]
+{% if iface.description %}
+Description={{ iface.description }}
+{% endif %}
+{% for address in iface.all_addresses %}
+Address={{ address }}
+{% endfor %}
+{% if iface.dhcp %}
+DHCP=yes
+{% endif %}
+
+ConfigureWithoutCarrier=yes
+
+[Link]
+RequiredForOnline=no
+{% if iface.devgroup %}
+Group={{ iface.devgroup }}
+{% endif %}
