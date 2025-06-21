@@ -1,6 +1,7 @@
 from typing import Annotated
 
 import typer
+from rich import print
 
 from .fetch import app as app_fetch
 from .reload import app as app_reload
@@ -36,3 +37,10 @@ def start_shell():
     gw.setup(verbose=True)
 
     IPython.start_ipython(argv=[], user_ns={"gw": gw})
+
+
+@app.command("print-config")
+def print_config():
+    from xrouter.gwlib import gw
+
+    print(gw.config)

@@ -13,6 +13,5 @@ wheels/
 configs/
 logs/
 backups/
-zones/
 bin/
 tmp/

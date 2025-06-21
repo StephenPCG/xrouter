@@ -84,7 +84,7 @@ def setup_firewall():
     gw.run_command(cmd)
 
 
-@app.command("net")
+@app.command("network")
 def setup_net():
     setup_ifaces()
     setup_firewall()
@@ -98,4 +98,40 @@ def setup_pods():
 
 @app.command("dnsmasq")
 def setup_dnsmasq():
-    pass
+    from xrouter.gwlib import gw
+
+    gw.print("[setup dnsmasq]")
+
+    gw.run_command(sh.mkdir.bake("-p", "/opt/xrouter/configs/dnsmasq"))
+    gw.run_command(sh.mkdir.bake("-p", "/opt/xrouter/configs/dnsmasq/manual"))
+
+    gw.install_template_file(
+        "/etc/dnsmasq.conf",
+        "dnsmasq/dnsmasq.conf",
+        {},
+    )
+
+    gw.install_template_file(
+        "/opt/xrouter/configs/dnsmasq/dns.conf",
+        "dnsmasq/dns.conf",
+        {
+            "conf": gw.config.dnsmasq,
+        },
+    )
+
+    gw.install_template_file(
+        "/opt/xrouter/configs/dnsmasq/dhcp.conf",
+        "dnsmasq/dhcp.conf",
+        {
+            "conf": gw.config.dnsmasq,
+        },
+    )
+
+    gw.run_command(sh.mkdir.bake("-p", "/var/log/dnsmasq"))
+    gw.install_template_file(
+        "/etc/logrotate.d/dnsmasq",
+        "dnsmasq/logrotate",
+        {},
+    )
+
+    # gw.run_command(sh.systemctl.bake("restart", "dnsmasq"))

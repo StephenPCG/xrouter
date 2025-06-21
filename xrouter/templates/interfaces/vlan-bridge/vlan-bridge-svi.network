@@ -11,6 +11,11 @@ Address={{ address }}
 {% if svi.dhcp %}
 DHCP=yes
 {% endif %}
+{% if svi.ipv6 %}
+IPv6SendRA=yes
+DHCPPrefixDelegation=yes
+IPv6AcceptRA=no
+{% endif %}
 
 ConfigureWithoutCarrier=yes
 
@@ -18,4 +23,13 @@ ConfigureWithoutCarrier=yes
 RequiredForOnline=no
 {% if svi.devgroup_number %}
 Group={{ svi.devgroup_number }}
+{% endif %}
+
+{% if svi.ipv6 %}
+[DHCPPrefixDelegation]
+#UplinkInterface=pppoe
+{% if svi.ipv6_subnet_id %}
+SubnetId={{ svi.ipv6_subnet_id }}
+{% endif %}
+Announce=yes
 {% endif %}

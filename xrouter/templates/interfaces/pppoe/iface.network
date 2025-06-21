@@ -8,12 +8,26 @@ Description={{ iface.description }}
 {% for address in iface.all_addresses %}
 Address={{ address }}
 {% endfor %}
-{% if iface.dhcp %}
-DHCP=yes
+
+{% if iface.enable_pd %}
+DHCP=ipv6
+DHCPPrefixDelegation=yes
 {% endif %}
+
+[DHCPv6]
+UseHostname=no
+UseDNS=no
+UseNTP=no
 
 [Link]
 RequiredForOnline=no
 {% if iface.devgroup_number %}
 Group={{ iface.devgroup_number }}
+{% endif %}
+
+{% if iface.enable_pd %}
+[DHCPPrefixDelegation]
+UplinkInterface=:self
+SubnetId=0
+Announce=no
 {% endif %}

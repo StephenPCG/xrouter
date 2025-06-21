@@ -11,6 +11,11 @@ Address={{ address }}
 {% if iface.dhcp %}
 DHCP=yes
 {% endif %}
+{% if iface.ipv6 %}
+IPv6SendRA=yes
+DHCPv6PrefixDelegation=yes
+{% endif %}
+
 
 ConfigureWithoutCarrier=yes
 

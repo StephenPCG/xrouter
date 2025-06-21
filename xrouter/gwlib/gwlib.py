@@ -8,9 +8,10 @@ class GwLib:
     verbose: bool = True
     project_root: Path = field(default_factory=lambda: Path("/opt/xrouter/xrouter"))
     config_root: Path = field(default_factory=lambda: Path("/opt/xrouter/configs"))
+    zones_root: Path = field(default_factory=lambda: Path("/opt/xrouter/configs/zones"))
+    dnsmasq_config_root: Path = field(default_factory=lambda: Path("/opt/xrouter/configs/dnsmasq"))
     log_root: Path = field(default_factory=lambda: Path("/opt/xrouter/logs"))
     backup_root: Path = field(default_factory=lambda: Path("/opt/xrouter/backups"))
-    zones_root: Path = field(default_factory=lambda: Path("/opt/xrouter/zones"))
     bin_root: Path = field(default_factory=lambda: Path("/opt/xrouter/bin"))
 
     @cached_property
@@ -122,6 +123,8 @@ class GwLib:
 
         self.backup_file(file)
 
+        file.parent.mkdir(parents=True, exist_ok=True)
+
         file.write_text(content)
         file.chmod(int(mode, 8))
 
@@ -158,6 +161,8 @@ class GwLib:
             self.print(diff)
 
         self.backup_file(file)
+
+        file.parent.mkdir(parents=True, exist_ok=True)
 
         file.write_bytes(content)
         file.chmod(int(mode, 8))

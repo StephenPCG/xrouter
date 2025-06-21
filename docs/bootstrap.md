@@ -27,7 +27,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 sudo apt install podman
 sudo apt install podman-compose -t bookworm-backports
 
-# interface packages
+# interface packages and core service packages
 sudo apt install pppoe wireguard
 
 # diagnostic tools

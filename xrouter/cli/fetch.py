@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import typer
 
 app = typer.Typer(
@@ -177,3 +179,52 @@ def fetch_fastly_ips():
     ipv6_content = "\n".join(cidrs_v6) + "\n"
     gw.print(f"Saving {len(cidrs_v6)} IPv6 networks to {ipv6_path} ...")
     gw.install_text_file(ipv6_path, ipv6_content, show_diff=False)
+
+
+@app.command("china-names")
+def fetch_china_names(show_diff: Annotated[bool, typer.Option("--show-diff", help="Show diff")] = False):
+    from xrouter.gwlib import gw
+    from xrouter.utils.download import download_text
+
+    gw.print("Downloading accelerated-domains.china.conf ...")
+    content = download_text(
+        "https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/refs/heads/master/accelerated-domains.china.conf",
+        "text",
+    )
+    gw.install_text_file(
+        gw.dnsmasq_config_root / "china-114.conf",
+        content,
+        show_diff=show_diff,
+    )
+    gw.install_text_file(
+        gw.dnsmasq_config_root / "china-223.conf",
+        content.replace("114.114.114.114", "223.5.5.5"),
+        show_diff=show_diff,
+    )
+
+    gw.print("Downloading apple.china.conf ...")
+    content = download_text(
+        "https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/refs/heads/master/apple.china.conf",
+        "text",
+    )
+    gw.install_text_file(
+        gw.dnsmasq_config_root / "apple-114.conf",
+        content,
+        show_diff=show_diff,
+    )
+    gw.install_text_file(
+        gw.dnsmasq_config_root / "apple-223.conf",
+        content.replace("114.114.114.114", "223.5.5.5"),
+        show_diff=show_diff,
+    )
+
+    gw.print("Downloading bogus-nxdomain.china.conf ...")
+    content = download_text(
+        "https://raw.githubusercontent.com/felixonmars/dnsmasq-china-list/refs/heads/master/bogus-nxdomain.china.conf",
+        "text",
+    )
+    gw.install_text_file(
+        gw.dnsmasq_config_root / "bogus-nxdomain-china.conf",
+        content,
+        show_diff=show_diff,
+    )

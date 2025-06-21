@@ -16,6 +16,11 @@ Address={{ address }}
 {% if iface.dhcp %}
 DHCP=yes
 {% endif %}
+{% if iface.ipv6 %}
+IPv6SendRA=yes
+DHCPPrefixDelegation=yes
+IPv6AcceptRA=no
+{% endif %}
 
 {% for svi in iface.vlan_interfaces %}
 VLAN={{ svi.name }}
@@ -27,4 +32,13 @@ ConfigureWithoutCarrier=yes
 RequiredForOnline=no
 {% if iface.devgroup_number %}
 Group={{ iface.devgroup_number }}
+{% endif %}
+
+{% if iface.ipv6 %}
+[DHCPPrefixDelegation]
+#UplinkInterface=pppoe
+{% if iface.ipv6_subnet_id %}
+SubnetId={{ iface.ipv6_subnet_id }}
+{% endif %}
+Announce=yes
 {% endif %}
