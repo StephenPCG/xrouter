@@ -16,6 +16,6 @@ ConfigureWithoutCarrier=yes
 
 [Link]
 RequiredForOnline=no
-{% if svi.devgroup %}
-Group={{ svi.devgroup }}
+{% if svi.devgroup_number %}
+Group={{ svi.devgroup_number }}
 {% endif %}

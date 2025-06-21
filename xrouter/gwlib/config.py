@@ -11,7 +11,10 @@ class InterfaceCommon(BaseModel):
     address: IPvAnyInterface | None = None
     addresses: list[IPvAnyInterface] = []
     dhcp: bool = False
-    group: int | Literal["wan", "lan", "guest", "container"] | None = None
+    devgroup: str | None = None
+
+    # 该字段在 XrouterConfig.modeL_post_init 中自动设置
+    devgroup_number: int | None = None
 
     @property
     def all_addresses(self):
@@ -35,24 +38,6 @@ class InterfaceCommon(BaseModel):
         `networkctl reload` 由 cli 的 `reload interfaces` 统一执行，这里为在 networkctl reload 之后要执行的命令。
         """
         pass
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def devgroup(self) -> int | None:
-        if self.group is None:
-            return None
-        if isinstance(self.group, int):
-            return self.group
-        if self.group == "wan":
-            return 1
-        if self.group == "lan":
-            return 2
-        if self.group == "guest":
-            return 3
-        if self.group == "container":
-            return 4
-
-        raise Exception(f"Unknown group: {self.group}")
 
 
 class Lo(InterfaceCommon):
@@ -210,15 +195,7 @@ class PodmanBridge(InterfaceCommon):
         ranges = []
 
         for range in self.ranges:
-            range_data = dict(subnet=range.subnet.with_prefixlen)
-            if range.gateway:
-                range_data["gateway"] = range.gateway
-            if range.rangeStart:
-                range_data["rangeStart"] = range.rangeStart
-            if range.rangeEnd:
-                range_data["rangeEnd"] = range.rangeEnd
-
-            ranges.append([range_data])
+            ranges.append([range.model_dump(mode="json", exclude_none=True)])
 
         return ranges
 
@@ -422,3 +399,22 @@ class XrouterConfig(BaseModel):
     interfaces: list[Interface]
     route: Route
     firewall: Firewall
+
+    def apply_devgroups(self):
+        from .gwlib import gw
+
+        gw.install_template_file(
+            "/etc/iproute2/group",
+            "iproute2-group",
+            dict(devgroups=self.devgroups),
+        )
+
+    def model_post_init(self, _context):
+        for iface in self.interfaces:
+            if not iface.devgroup:
+                continue
+
+            if iface.devgroup not in self.devgroups:
+                raise ValueError(f"Invalid devgroup in iface: {iface.name}, {iface.devgroup}")
+
+            iface.devgroup_number = self.devgroups[iface.devgroup]

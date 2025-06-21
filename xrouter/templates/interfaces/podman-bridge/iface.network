@@ -16,6 +16,6 @@ ConfigureWithoutCarrier=yes
 
 [Link]
 RequiredForOnline=no
-{% if iface.devgroup %}
-Group={{ iface.devgroup }}
+{% if iface.devgroup_number %}
+Group={{ iface.devgroup_number }}
 {% endif %}

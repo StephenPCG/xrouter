@@ -21,12 +21,22 @@ def setup_system():
 
     gw.run_command(sh.sysctl.bake("-p", "--system"))
 
+    gw.install_template_file(
+        "/etc/systemd/networkd.conf",
+        "networkd.conf",
+        {},
+    )
+    gw.run_command(sh.systemctl.bake("restart", "systemd-networkd"))
+
 
 @app.command("ifaces")
 def setup_ifaces():
     from xrouter.gwlib import gw
 
     gw.print("[setup interfaces]")
+
+    # ensure devgroups are configured
+    gw.config.apply_devgroups()
 
     for iface in gw.config.interfaces:
         iface.apply()
@@ -64,6 +74,9 @@ def setup_firewall():
     from xrouter.gwlib import gw
 
     gw.print("[setup firewall]")
+
+    # ensure devgroups are configured
+    gw.config.apply_devgroups()
 
     gw.config.firewall.apply()
 

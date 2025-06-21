@@ -1,0 +1,6 @@
+# device group names
+0       default
+
+{% for name, number in devgroups.items() %}
+{{ number }}    {{ name }}
+{% endfor %}
