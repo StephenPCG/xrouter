@@ -8,6 +8,8 @@ Description={{ iface.description }}
 {% for address in iface.all_addresses %}
 Address={{ address }}
 {% endfor %}
+# avoid remove pppoe ipv4 address
+KeepConfiguration=static
 
 {% if iface.enable_pd %}
 DHCP=ipv6

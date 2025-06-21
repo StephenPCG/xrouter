@@ -23,6 +23,8 @@ table inet firewall {
         # allow all icmpv6 packets (ensure ipv6 pd works)
         meta l4proto ipv6-icmp accept
 
+        # ipv6 prefix delegation
+        iifgroup wan udp dport { 546 } accept
         # drop all traffic from wan
         iifgroup wan drop
 

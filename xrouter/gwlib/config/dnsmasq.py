@@ -87,7 +87,7 @@ class DNS(BaseModel):
     hosts: list[tuple[str, str] | str] = []
     cnames: list[tuple[str, str] | str] = []
     # 太复杂，直接裸写
-    srvhost: list[str] = []
+    srvhosts: list[str] = []
 
     @property
     def host_lines(self) -> Sequence[str]:

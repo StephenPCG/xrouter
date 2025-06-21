@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from .container import ContainerConfig
 from .dnsmasq import DnsmasqConfig
 from .firewall import Firewall
-from .interface import Interface
+from .interface import Interface, VlanBridge
 from .route import Route
 
 
@@ -19,6 +19,14 @@ class XrouterConfig(BaseModel):
 
     def model_post_init(self, _context):
         for iface in self.interfaces:
+            if isinstance(iface, VlanBridge):
+                for svi in iface.vlan_interfaces:
+                    if not svi.devgroup:
+                        continue
+                    if svi.devgroup not in self.devgroups:
+                        raise ValueError(f"Invalid devgroup in iface: {iface.name}, {iface.devgroup}")
+                    svi.devgroup_number = self.devgroups[svi.devgroup]
+
             if not iface.devgroup:
                 continue
 

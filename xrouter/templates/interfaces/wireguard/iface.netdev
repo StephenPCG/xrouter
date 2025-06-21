@@ -19,5 +19,6 @@ PersistentKeepalive={{ peer.persistent_keepalive }}
 {% if peer.allowed_ips %}
 AllowedIPs={{ peer.allowed_ips_str }}
 {% endif %}
+PersistentKeepalive=10
 
 {% endfor %}

@@ -1,5 +1,6 @@
 from typing import Annotated
 
+import sh
 import typer
 from rich import print
 
@@ -44,3 +45,26 @@ def print_config():
     from xrouter.gwlib import gw
 
     print(gw.config)
+
+
+@app.command("fix-perms")
+def fix_perms():
+    import os
+
+    from xrouter.gwlib import gw
+
+    sudo_user = os.environ.get("SUDO_USER")
+
+    if not sudo_user:
+        print("Not running as sudo, can not fix perms")
+        raise typer.Exit(1)
+
+    gw.run_command(sh.chown.bake("-R", f"{sudo_user}", gw.config_root))
+
+
+@app.command("system-startup")
+def system_startup_script():
+    from .reload import reload_firewall, reload_route
+
+    reload_route()
+    reload_firewall()

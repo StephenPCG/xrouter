@@ -90,14 +90,19 @@ class GwLib:
     def print(self, msg: str):
         self.logger.info(msg)
 
-    def run_command(self, command):
+    def run_command(self, command, stream: bool = False):
+        import sys
+
         from sh import Command
 
         if not isinstance(command, Command):
             raise Exception("Invalid command, must be constructed by sh.COMMAND.bake()")
 
         self.logger.info(f"> {command}")
-        self.logger.info(command())
+        if stream:
+            command(_out=sys.stdout, _err=sys.stderr)
+        else:
+            self.logger.info(command())
 
     def render_template(self, template_name: str, context: dict):
         template = self.jinja2_env.get_template(template_name)

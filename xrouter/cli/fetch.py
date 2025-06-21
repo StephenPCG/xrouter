@@ -228,3 +228,23 @@ def fetch_china_names(show_diff: Annotated[bool, typer.Option("--show-diff", hel
         content,
         show_diff=show_diff,
     )
+
+
+@app.command("wgsd-client")
+def fetch_wgsd_client():
+    from pathlib import Path
+
+    import sh
+
+    from xrouter.gwlib import gw
+
+    gw.print("Downloading wgsd-client ...")
+
+    url = "https://github.com/jwhited/wgsd/releases/download/v0.3.6/wgsd-client_0.3.6_linux_amd64.tar.gz"
+    binary_name = "wgsd-client"
+    install_path = Path("/usr/local/bin")
+
+    gw.run_command(sh.wget.bake(url, "-O", "/tmp/wgsd-client.tar.gz"), stream=True)
+    gw.run_command(sh.tar.bake("-x", "-f", "/tmp/wgsd-client.tar.gz", "-C", "/tmp", binary_name))
+    gw.run_command(sh.mv.bake("/tmp/wgsd-client", install_path))
+    gw.run_command(sh.chmod.bake("+x", install_path / binary_name))

@@ -166,6 +166,9 @@ class Wireguard(InterfaceCommon):
     listen_port: str
     peers: list[WireguardPeer] = []
 
+    wgsd_client_dns: str | None = None
+    wgsd_client_zone: str | None = None
+
     def apply(self):
         from ..gwlib import gw
 
@@ -179,6 +182,20 @@ class Wireguard(InterfaceCommon):
             "interfaces/wireguard/iface.network",
             dict(iface=self),
         )
+
+        if self.wgsd_client_dns and self.wgsd_client_zone:
+            gw.install_template_file(
+                f"/etc/systemd/system/wgsd-client-{self.name}.service",
+                "interfaces/wireguard/wgsd-client@service",
+                dict(iface=self),
+            )
+            gw.install_template_file(
+                f"/etc/systemd/system/wgsd-client-{self.name}.timer",
+                "interfaces/wireguard/wgsd-client@timer",
+                dict(iface=self),
+            )
+            # gw.run_command(sh.systemctl.bake("enable", f"wgsd-client-{self.name}.service"))
+            gw.run_command(sh.systemctl.bake("enable", f"wgsd-client-{self.name}.timer"))
 
 
 class PodmanBridgeIpamRange(BaseModel):

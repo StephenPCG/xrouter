@@ -30,6 +30,25 @@ def setup_system():
     )
     gw.run_command(sh.systemctl.bake("restart", "systemd-networkd"))
 
+    gw.install_template_file(
+        "/etc/systemd/system/startup-xrouter.service",
+        "startup-xrouter.service",
+        {},
+    )
+    gw.run_command(sh.systemctl.bake("enable", "startup-xrouter.service"))
+
+    gw.run_command(sh.mkdir.bake("-p", gw.config_root, gw.dnsmasq_config_root, gw.zones_root))
+
+    gw.run_command(sh.gw.bake("fix-perms"), stream=True)
+
+
+@app.command("avahi")
+def setup_avahi():
+    from xrouter.gwlib import gw
+
+    gw.run_command(sh.sed.bake("-i", "s/#enable-reflector=no/enable-reflector=yes/g", "/etc/avahi/avahi-daemon.conf"))
+    gw.run_command(sh.systemctl.bake("restart", "avahi-daemon"))
+
 
 @app.command("ifaces")
 def setup_ifaces():
@@ -62,8 +81,7 @@ def setup_route():
 
     gw.config.route.apply(gw.bin_root / "setup-route.sh")
 
-    cmd = Command(gw.bin_root / "setup-route.sh")
-    gw.run_command(cmd)
+    gw.run_command(Command(gw.bin_root / "setup-route.sh"))
 
 
 @app.command("firewall")
@@ -82,8 +100,7 @@ def setup_firewall():
 
     gw.config.firewall.apply()
 
-    cmd = Command(gw.bin_root / "setup-firewall.nft")
-    gw.run_command(cmd)
+    gw.run_command(Command(gw.bin_root / "setup-firewall.nft"))
 
 
 @app.command("network")

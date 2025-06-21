@@ -12,6 +12,6 @@ noproxyarp
 +ipv6 ipv6cp-use-ipaddr
 
 plugin rp-pppoe.so {{iface.ethport}}
-ipparam {{iface.name}}
+ifname {{iface.name}}
 user "{{iface.username}}"
 password "{{iface.password}}"
