@@ -32,6 +32,9 @@ table inet firewall {
         # allow dns & dhcp, disallow all other traffic from guest
         iifgroup 0x3 udp dport {53, 67} accept
         iifgroup 0x3 drop
+
+        # allow all traffix from container
+        iifgroup 0x4 accept
     }
 
     chain output {
@@ -64,6 +67,10 @@ table inet firewall {
         # allow forward guest to wan, but not private addr (for example, private tunnels)
         iifgroup 0x3 oifgroup 0x1 ip daddr != $PRIVATE_NETWORKS accept
         iifgroup 0x3 drop
+
+        # allow forward container to wan
+        iifgroup 0x4 oifgroup 0x1 accept
+        iifgroup 0x4 drop
     }
 
     chain custom_firewall_input {}

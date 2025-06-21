@@ -11,7 +11,7 @@ class InterfaceCommon(BaseModel):
     address: IPvAnyInterface | None = None
     addresses: list[IPvAnyInterface] = []
     dhcp: bool = False
-    group: int | Literal["wan", "lan", "guest"] | None = None
+    group: int | Literal["wan", "lan", "guest", "container"] | None = None
 
     @property
     def all_addresses(self):
@@ -49,6 +49,8 @@ class InterfaceCommon(BaseModel):
             return 2
         if self.group == "guest":
             return 3
+        if self.group == "container":
+            return 4
 
         raise Exception(f"Unknown group: {self.group}")
 
@@ -280,9 +282,6 @@ class Route(BaseModel):
 
         ip_batch_lines = []
 
-        for table, entries in self.tables.items():
-            ip_batch_lines.extend(self.create_table_batch_lines(table, entries))
-
         # flush rules
         ip_batch_lines.extend(
             [
@@ -291,13 +290,16 @@ class Route(BaseModel):
                 "rule add from all lookup local pref 32767",
             ]
         )
-
         for rule in self.rules:
             ip_batch_lines.append(f"rule add {rule}")
 
+        # flush tables
+        for table, entries in self.tables.items():
+            ip_batch_lines.extend(self.create_table_batch_lines(table, entries))
+
         content_lines = [
             "#!/bin/bash",
-            "set -e",
+            "#set -e",
             "sudo ip -batch - <<EOF",
             *ip_batch_lines,
             "EOF",
