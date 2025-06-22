@@ -10,6 +10,7 @@ class GwLib:
     config_root: Path = field(default_factory=lambda: Path("/opt/xrouter/configs"))
     zones_root: Path = field(default_factory=lambda: Path("/opt/xrouter/configs/zones"))
     dnsmasq_config_root: Path = field(default_factory=lambda: Path("/opt/xrouter/configs/dnsmasq"))
+    wireguard_config_root: Path = field(default_factory=lambda: Path("/opt/xrouter/configs/wireguard"))
     log_root: Path = field(default_factory=lambda: Path("/opt/xrouter/logs"))
     backup_root: Path = field(default_factory=lambda: Path("/opt/xrouter/backups"))
     bin_root: Path = field(default_factory=lambda: Path("/opt/xrouter/bin"))

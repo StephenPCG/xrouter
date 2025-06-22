@@ -64,7 +64,35 @@ def fix_perms():
 
 @app.command("system-startup")
 def system_startup_script():
-    from .reload import reload_firewall, reload_route
+    from xrouter.gwlib import gw
 
-    reload_route()
-    reload_firewall()
+    from .setup import setup_firewall, setup_route
+
+    gw.print("==== invoked by system startup script ====")
+
+    setup_route()
+    setup_firewall()
+
+
+@app.command("dispatcher-routable-hook")
+def dispatcher_routable_hook():
+    import os
+
+    from xrouter.gwlib import gw
+
+    from .setup import setup_firewall, setup_route
+
+    gw.print("==== invoked by networkd-dispatcher routable hook ====")
+    gw.print("==== BEGIN INFO ====")
+    for env in ["IFACE", "STATE", "ADDR", "IP_ADDRS", "IP6_ADDRS", "AdministrativeState", "OperationalState"]:
+        gw.print(f"{env}: {os.environ.get(env)}")
+    gw.print("==== END INFO ====")
+
+    iface_name = os.environ.get("IFACE")
+    iface = gw.config.all_interfaces.get(iface_name)
+    if iface:
+        gw.print("Calling iface up hook...")
+        iface.up_hook()
+
+    setup_route()
+    setup_firewall()

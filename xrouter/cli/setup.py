@@ -37,6 +37,15 @@ def setup_system():
     )
     gw.run_command(sh.systemctl.bake("enable", "startup-xrouter.service"))
 
+    gw.run_command(sh.systemctl.bake("enable", "networkd-dispatcher.service"))
+    gw.run_command(sh.systemctl.bake("start", "networkd-dispatcher.service"))
+    gw.install_template_file(
+        "/etc/networkd-dispatcher/routable.d/99-xrouter.sh",
+        "networkd-dispatcher-routable-hook.sh",
+        {},
+        mode="755",
+    )
+
     gw.run_command(sh.mkdir.bake("-p", gw.config_root, gw.dnsmasq_config_root, gw.zones_root))
 
     gw.run_command(sh.gw.bake("fix-perms"), stream=True)

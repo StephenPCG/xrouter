@@ -34,6 +34,8 @@ class Route(BaseModel):
         for table, entries in self.tables.items():
             ip_batch_lines.extend(self.create_table_batch_lines(table, entries))
 
+        # TODO：这里应当 per-entry 执行 `ip batch -`，在执行前检查对应的网关是否可用，例如接口是否 up
+
         content_lines = [
             "#!/bin/bash",
             "#set -e",

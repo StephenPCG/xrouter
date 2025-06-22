@@ -1,7 +1,7 @@
 from typing import Annotated, Literal
 
 import sh
-from pydantic import BaseModel, Field, IPvAnyAddress, IPvAnyInterface, IPvAnyNetwork, computed_field
+from pydantic import BaseModel, Field, IPvAnyAddress, IPvAnyInterface, IPvAnyNetwork, PrivateAttr
 
 
 class InterfaceCommon(BaseModel):
@@ -16,7 +16,7 @@ class InterfaceCommon(BaseModel):
     ipv6_subnet_id: int | None = None
 
     # 该字段在 XrouterConfig.modeL_post_init 中自动设置
-    devgroup_number: int | None = None
+    devgroup_number: Annotated[int | None, PrivateAttr()] = None
 
     @property
     def all_addresses(self):
@@ -38,6 +38,14 @@ class InterfaceCommon(BaseModel):
         大多数 interface 在配置后只需要运行 networkctl reload 即可，少数 interface 可能需要额外的命令。
 
         `networkctl reload` 由 cli 的 `reload interfaces` 统一执行，这里为在 networkctl reload 之后要执行的命令。
+        """
+        pass
+
+    def up_hook(self):
+        """
+        当 interface up 时被调用。
+
+        目前只有一个入口，在 networkd-dispatcher 的 routable hook 中，会检查接口名字，并执行相应的操作。
         """
         pass
 
@@ -169,6 +177,12 @@ class Wireguard(InterfaceCommon):
     wgsd_client_dns: str | None = None
     wgsd_client_zone: str | None = None
 
+    @property
+    def wg_config_file(self):
+        from xrouter.gwlib import gw
+
+        return f"{gw.wireguard_config_root}/{self.name}.conf"
+
     def apply(self):
         from ..gwlib import gw
 
@@ -180,6 +194,11 @@ class Wireguard(InterfaceCommon):
         gw.install_template_file(
             f"/etc/systemd/network/02-{self.name}.network",
             "interfaces/wireguard/iface.network",
+            dict(iface=self),
+        )
+        gw.install_template_file(
+            self.wg_config_file,
+            "interfaces/wireguard/wg.conf",
             dict(iface=self),
         )
 
@@ -196,6 +215,12 @@ class Wireguard(InterfaceCommon):
             )
             # gw.run_command(sh.systemctl.bake("enable", f"wgsd-client-{self.name}.service"))
             gw.run_command(sh.systemctl.bake("enable", f"wgsd-client-{self.name}.timer"))
+
+    def up_hook(self):
+        from xrouter.gwlib import gw
+
+        gw.print("sync wireguard conf ...")
+        gw.run_command(sh.wg.bake("syncconf", self.name, self.wg_config_file))
 
 
 class PodmanBridgeIpamRange(BaseModel):
